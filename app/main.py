@@ -78,9 +78,6 @@ async def runner():
 
 
 if __name__ == "__main__":
-    # ✅ start API in background thread
     api_thread = threading.Thread(target=start_api, daemon=True)
     api_thread.start()
-
-    # ✅ run worker
     asyncio.run(runner())
