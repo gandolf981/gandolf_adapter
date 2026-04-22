@@ -1,9 +1,9 @@
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import socket
 from db import sessions
 import time 
-
+from state_manager import update_state
 WORKER_ID = socket.gethostname()  # or uuid
 
 
@@ -20,8 +20,14 @@ def acquire_session():
             }
         },
         sort=[("last_heartbeat", 1)],  # optional fairness
+        
         return_document=True
     )
+    update_state(session["name"], {
+    "status": "running",
+    "session": session["name"],
+    "mode": "init",
+})
     print("*"*80)
     print(session)
     return session
@@ -49,7 +55,7 @@ def heartbeat(session_name):
         )
         time.sleep(10)
 
-from datetime import timedelta
+
 
 def release_stale_sessions():
     timeout = datetime.utcnow() - timedelta(seconds=30)

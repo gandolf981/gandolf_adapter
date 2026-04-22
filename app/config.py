@@ -7,9 +7,19 @@ DB_NAME = os.getenv("DB_NAME")
 DB_NAME="test_telegram_db"
 
 USE_PROXY= bool(os.getenv("USE_PROXY"))
+CHANNELS = os.getenv("CHANNELS").split(",")
+
+
+# MONGO_URI="144.172.92.16:27017/"
+# DB_NAME="test_telegram_db"
+# COLLECTION_NAME="signals"
+# MONGO_USER="administrator"
+# MONGO_PASSWORD="11x92wyF2A"
+# CHANNELS=["VASILY_TRADER_FOREX_SIGNALS","binancekillers","cryptoNotesMohsin"]
+# SESSION_1="account1|33191010|e85c932b610556f5f76579b45e31b47b|1BJWap1wBu8Jmrm2KcHXQKNpYMeANKPnzeTtfQfMu8ZoiCoLlbgcPYfZnIhQ0gGDQUb90hLBUmPsmiXpDYpQdXRrwk6_Q7BGbSLNY6YJA0lfNlBlt3VfI8NZm5sOkbrAOvH_mry-acBdBUA1oiPG6HzROiTvRe5-EBuyA7sdqCqbOB199A8OqYrdTd0fvxvHPSOthtG3C7nwHrxZ7XCknt490xS4310oT3ObpM6U72K30H15Trwc1mg_qceAYg4KJsOfWSLLfsRCwtx0T9JNLlaxA4eLesPFa2yaIVaOJpeyPNh7RGomGbf7E4COuQI7X4E_vJE6C_eeECGYF3RV307qNtmJPWoI="
+# USE_PROXY=False
 PROXY = (
     "socks5",
     "host.docker.internal",
     10808,
 ) if USE_PROXY else None
-CHANNELS = os.getenv("CHANNELS").split(",")

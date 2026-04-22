@@ -2,29 +2,44 @@
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from state import STATE
-from datetime import datetime
+from state_manager import get_state
 
 app = FastAPI()
 
 
 @app.get("/state")
-def get_state():
-    return STATE
-
+def state():
+    return get_state()
 
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
-    color = {
-        "running": "#16a34a",
-        "error": "#dc2626",
-        "starting": "#f59e0b"
-    }.get(STATE["status"], "#6b7280")
+    states = get_state()
 
-    html = f"""
+    cards = ""
+
+    for s in states:
+        color = {
+            "running": "#16a34a",
+            "error": "#dc2626",
+            "starting": "#f59e0b"
+        }.get(s.get("status"), "#6b7280")
+
+        cards += f"""
+        <div class="card">
+            <div class="title">🚀 {s.get("worker_id")}</div>
+            Status: <span style="color:{color}">{s.get("status")}</span><br>
+            Session: {s.get("session")}<br>
+            Mode: {s.get("mode")}<br>
+            Channel: {s.get("current_channel")}<br>
+            Last Msg: {s.get("last_message_id")}<br>
+            Updated: {s.get("updated_at")}
+        </div>
+        """
+
+    return f"""
     <html>
     <head>
-        <title>Worker Dashboard</title>
+        <title>Workers Dashboard</title>
         <meta http-equiv="refresh" content="2">
         <style>
             body {{
@@ -40,36 +55,13 @@ def dashboard():
                 margin-bottom: 15px;
             }}
             .title {{
-                font-size: 22px;
+                font-size: 20px;
                 margin-bottom: 10px;
-            }}
-            .status {{
-                color: {color};
-                font-weight: bold;
             }}
         </style>
     </head>
     <body>
-
-        <div class="card">
-            <div class="title">🚀 Worker Status</div>
-            Status: <span class="status">{STATE["status"]}</span><br>
-            Session: {STATE["session"]}<br>
-            Mode: {STATE["mode"]}
-        </div>
-
-        <div class="card">
-            <div class="title">📡 Activity</div>
-            Channel: {STATE["current_channel"]}<br>
-            Last Message ID: {STATE["last_message_id"]}
-        </div>
-
-        <div class="card">
-            <div class="title">⏱ Last Update</div>
-            {STATE["updated_at"]}
-        </div>
-
+        {cards}
     </body>
     </html>
     """
-    return html

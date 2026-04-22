@@ -9,6 +9,7 @@ message_collection = db["message"]
 state_collection = db["backfill_state"]
 channel = db["channel"]
 sessions = db["sessions"]
+worker_state = db["worker_state"]
 
 def init_indexes():
     message_collection.create_index(
