@@ -4,7 +4,6 @@ import time
 
 
 client = MongoClient(f'mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_URI}{DB_NAME}?authSource=admin')
-# client = MongoClient(f'mongodb://administrator:11x92wyF2A@144.172.92.16:27017/')
 def test():
     print("🔌 Connecting...")
 
