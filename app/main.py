@@ -1,13 +1,21 @@
 import asyncio
 import os
+import threading
+import uvicorn
 
 from telethon import TelegramClient, events
+from worker import acquire_session, release_stale_sessions
 
-
+from api import app
+from state import STATE
 from utils import process_message, backfill_channel
-from config import API_ID, API_HASH, CHANNELS, PROXY
+from config import CHANNELS, PROXY
+from client_generator import create_client
+from session_db_generator import load_sessions_from_env
 
 
+def start_api():
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 async def run_backfill(client):
     for channel in CHANNELS:
@@ -24,40 +32,34 @@ def register_listener(client):
         except Exception as e:
             print(f"⚠️ Listener error: {e}")
 
-
-
-async def main():
-    client = TelegramClient(
-        "./session",   
-        API_ID,
-        API_HASH,
-        proxy=PROXY,
-        connection_retries=5,
-    )
-
-    await client.connect()
-
-    if not await client.is_user_authorized():
-        raise Exception("❌ Session not authorized. Run login once.")
-
-    print("🚀 Telegram client started")
-
-    register_listener(client)
-
-
-    await run_backfill(client)
-
-    print("👂 Listening for new signals...")
-    await client.run_until_disconnected()
-
-
+SESSION=None
 async def runner():
+    global SESSION
+
+    load_sessions_from_env()
+    release_stale_sessions()
+    SESSION = acquire_session()
+
+    if not SESSION:
+        print("No session available")
+        return
+
     while True:
         try:
-            await main()
+            client = create_client(SESSION)
+            await client.connect()
+
+            if not await client.is_user_authorized():
+                raise Exception("Not authorized")
+
+            register_listener(client)
+            await run_backfill(client)
+
+            await client.run_until_disconnected()
+
         except Exception as e:
             print(f"❌ Error: {e}")
-            print("🔄 Restarting in 5 seconds...")
+            print("🔄 reconnecting same session in 5 sec...")
             await asyncio.sleep(5)
 
 
